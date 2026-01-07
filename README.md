@@ -3,6 +3,7 @@
 ## Extract
 
 **Set Up**
+
 Created a new repository, cloned it with github desktop and opened it in vscode. Created a virtual environment (**python -m venv .venv**) and activated it (**.venv/Scripts/activate**). Installed requests (**pip install requests**) - this is the only non-native package we used so it is the only one I had to install. Created a new branch (**git switch -c extract branch**). Created a requirements file (**pip freeze > requirements.txt**).
 
 **Import Packages**
