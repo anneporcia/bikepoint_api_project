@@ -54,14 +54,14 @@ The pipeline consists of two main steps:
 
 1. **Extraction**: Run the API script to pull data from TfL.
 ```bash
-python tfl_api_extract.py
+python api_script.py
 
 ```
 
 
 2. **Loading**: Run the load script to push the data to AWS S3.
 ```bash
-python s3_load.py
+python load_bike_point.py
 
 ```
 
