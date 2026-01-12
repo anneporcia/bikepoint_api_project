@@ -85,14 +85,14 @@ python s3_load.py
 
 ## ⚙️ How It Works
 
-### Part 1: Extraction (`tfl_api_extract.py`)
+### Part 1: Extraction (`api_script.py`)
 
 * **Endpoint**: `https://api.tfl.gov.uk/BikePoint`
 * **Process**: The script calls the API and checks for a `200 OK` status.
 * **Logging**: A log file is created for every run (named by timestamp) to record the success or failure of the download.
 * **Outcome**: A JSON file containing the full list of bike points is saved in the `/data` folder.
 
-### Part 2: Loading (`s3_load.py`)
+### Part 2: Loading (`load_bike_point.py`)
 
 * **Process**: The script scans the `/data` folder for any files ending in `.json`.
 * **Transfer**: It uses the AWS SDK (`boto3`) to upload each file to the root of your specified S3 bucket.
