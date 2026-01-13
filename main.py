@@ -11,9 +11,9 @@ load_dotenv()
 timestamp = datetime.now().strftime('%Y-%m-%d %H-%M-%S')
 url = 'https://api.tfl.gov.uk/BikePoint'
 data_dir = 'data'
-aws_access_key = os.getenv('AWS_ACCESS_KEY')
-aws_secret_key = os.getenv('AWS_SECRET_KEY')
-bucket_name = os.getenv('bucket_name')
+AWS_ACCESS_NAME = os.getenv('AWS_ACCESS_KEY')
+AWS_SECRET_NAME = os.getenv('AWS_SECRET_KEY')
+BUCKET_NAME = os.getenv('bucket_name')
 
 extract_logger = logging_function('extract',timestamp)
 
@@ -21,4 +21,4 @@ extract_function(url, 3, extract_logger, timestamp)
 
 load_log = logging_function('load',timestamp)
 
-load_function(data_dir, aws_access_key, aws_secret_key, bucket_name, load_log)
+load_function(data_dir, AWS_ACCESS_NAME, AWS_SECRET_NAME, BUCKET_NAME, load_log)
