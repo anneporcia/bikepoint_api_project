@@ -19,6 +19,6 @@ extract_logger = logging_function('extract',timestamp)
 
 extract_function(url, 3, extract_logger, timestamp)
 
-load_logger = logging_function('load',timestamp)
+load_log = logging_function('load',timestamp)
 
-load_function(data_dir, aws_access_key, aws_secret_key, bucket_name, load_logger)
+load_function(data_dir, aws_access_key, aws_secret_key, bucket_name, load_log)
