@@ -13,7 +13,7 @@ url = 'https://api.tfl.gov.uk/BikePoint'
 data_dir = 'data'
 AWS_ACCESS_NAME = os.getenv('AWS_ACCESS_KEY')
 AWS_SECRET_NAME = os.getenv('AWS_SECRET_KEY')
-BUCKET_NAME = os.getenv('bucket_name')
+BUCKET_NAME = os.getenv('BUCKET_NAME')
 
 extract_logger = logging_function('extract',timestamp)
 
