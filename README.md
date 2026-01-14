@@ -1,110 +1,132 @@
-# TfL BikePoint Data Pipeline
+<div align="center">
 
-An automated data pipeline that extracts real-time bike docking station data from the **Transport for London (TfL) API**, saves it as structured JSON, and uploads it to an **AWS S3 bucket** for long-term storage and analysis.
+# 🚲 TfL BikePoint Data Pipeline
+
+<img src="https://img.shields.io/badge/Python-3.12%2B-blue?style=for-the-badge&logo=python" alt="Python">
+<img src="https://img.shields.io/badge/AWS-S3-orange?style=for-the-badge&logo=amazon-aws" alt="AWS">
+<img src="https://img.shields.io/badge/Source-TfL_API-red?style=for-the-badge&logo=london-underground" alt="TfL">
+
+<br />
+
+<p>
+  <b>A ELT script that extracts live cycle hire data from Transport for London (TfL) and archives it to AWS S3.</b>
+</p>
+
+</div>
 
 ---
 
-## 🚀 Features
-
-* **Real-time Extraction**: Connects to the TfL `BikePoint` endpoint to get live availability across London.
-* **Resilient API Logic**: Implements a 3-try retry mechanism with wait times to handle network instability.
-* **Automated Logging**: Tracks every success, retry, and error in a dedicated `/logs` folder with timestamped log files.
-* **S3 Integration**: Uses `boto3` to transfer local JSON files to AWS S3.
-* **Storage Efficiency**: Automatically deletes local files once the S3 upload is confirmed.
+## 📋 Table of Contents
+- [Overview](#-overview)
+- [Workflow Architecture](#-workflow-architecture)
+- [Project Structure](#-project-structure)
+- [Prerequisites](#-prerequisites)
+- [Environment Configuration](#-environment-configuration)
+- [Running the Pipeline](#-running-the-pipeline)
 
 ---
 
-## 🛠 Setup and Usage
+## 📖 Overview
 
-### 1. Requirements
-Install the necessary Python libraries:
-**Set Up**
+This project captures real-time data from the **TfL BikePoint API**, which provides the status, location, and availability of cycle hire docking stations across London. The pipeline is designed to:
 
-Created a new repository, cloned it with github desktop and opened it in vscode. Created a virtual environment (**python -m venv .venv**) and activated it (**.venv/Scripts/activate**). Installed requests (**pip install requests**) - this is the only non-native package we used so it is the only one I had to install. Created a new branch (**git switch -c extract branch**). Created a requirements file (**pip freeze > requirements.txt**).
+1.  **Extract:** Query the TfL API for the latest station data.
+2.  **Save:** Store the raw JSON response locally with a precise timestamp.
+3.  **Load:** Upload the JSON file to a specified AWS S3 bucket.
+4.  **Cleanup:** Remove the local file to maintain a clean environment.
 
-**Import Packages**
+---
 
-Imported packages to use in the script. Including:
- - **requests**: for calling the api
- - **os**: for finding the directory to save the file in
- - **datetime**: for timestamps
- - **json**: to use json.dump to write the file in a json format
- - **time**: to define the time it takes for it to error before it times out
- - **logging**: to create the log files and define the log messages
- - 
-```bash
-pip install requests python-dotenv boto3
+## ⚙️ Workflow Architecture
 
-```
 
-### 2. Environment Configuration
 
-Create a `.env` file in the project root to store your AWS details:
-
-```env
-AWS_ACCESS_KEY=your_access_key
-AWS_SECRET_KEY=your_secret_key
-bucket_name=your_s3_bucket_name
-
-```
-
-### 3. Execution
-
-The pipeline consists of two main steps:
-
-1. **Extraction**: Run the API script to pull data from TfL.
-```bash
-python api_script.py
+```mermaid
+graph TD;
+    Start([main.py]) -->|Initialize| Env[Load .env Variables];
+    Env --> API[GET tfl.gov.uk/BikePoint];
+    API -- "Success (200)" --> Save["Save JSON to /data"];
+    API -- Fail --> Retry["Retry (Max 3)"];
+    Save --> Upload[Upload to AWS S3];
+    Upload --> Cleanup[Delete Local JSON];
+    Cleanup --> End([Finish]);
+    
+    subgraph Logging
+    Log1[extract Logs]
+    Log2[load Logs]
+    end
+    
+    API -.-> Log1
+    Upload -.-> Log2
 
 ```
-
-
-2. **Loading**: Run the load script to push the data to AWS S3.
-```bash
-python load_bike_point.py
-
-```
-
-
 
 ---
 
 ## 📂 Project Structure
 
+The project assumes the following modular structure:
+
 ```text
-.
-├── .env                # AWS credentials
-├── tfl_api_extract.py  # Script 1: Extract data from TfL API
-├── s3_load.py          # Script 2: Upload JSON files to S3
-├── logs/               # Log files created during extraction
-└── data/               # Temporary storage for JSON files (cleaned after upload)
+├── modules/
+│   ├── __init__.py       # (Optional)
+│   ├── extract.py        # Logic to fetch data from TfL API
+│   ├── load.py           # Logic to upload files to S3
+│   └── logging.py        # Logging configuration
+├── main.py               # Orchestrator script
+├── .env                  # Secrets (Not committed to Git)
+└── requirements.txt      # Dependencies
 
 ```
 
 ---
 
-## ⚙️ How It Works
+## 🛠 Prerequisites
 
-### Part 1: Extraction (`api_script.py`)
+Ensure you have Python installed. Install the necessary packages using pip:
 
-* **Endpoint**: `https://api.tfl.gov.uk/BikePoint`
-* **Process**: The script calls the API and checks for a `200 OK` status.
-* **Logging**: A log file is created for every run (named by timestamp) to record the success or failure of the download.
-* **Outcome**: A JSON file containing the full list of bike points is saved in the `/data` folder.
+```bash
+pip install requests boto3 python-dotenv
 
-### Part 2: Loading (`load_bike_point.py`)
-
-* **Process**: The script scans the `/data` folder for any files ending in `.json`.
-* **Transfer**: It uses the AWS SDK (`boto3`) to upload each file to the root of your specified S3 bucket.
-* **Cleanup**: Upon a successful response from AWS, the local file is removed from your machine to prevent duplicate uploads and save space.
+```
 
 ---
 
-## 📝 Technical Notes
+## 🔐 Environment Configuration
 
-* **TfL API Limits**: While this script uses the public endpoint, frequent calls may require a TfL App ID/Key if you scale the project.
-* **Logging**: If you don't see data in your bucket, check the `/logs` folder first to see if the API call was successful.
-* **Timeout**: The API call is set with a 20-second timeout to prevent the script from hanging indefinitely.
+Create a `.env` file in the root directory. This keeps your AWS credentials secure.
+
+```ini
+# .env file
+
+# AWS Credentials
+AWS_ACCESS_KEY=your_access_key_here
+AWS_SECRET_KEY=your_secret_key_here
+
+# S3 Configuration
+bucket_name=your_s3_bucket_name
+
+```
 
 ---
 
+## 🚀 Running the Pipeline
+
+To execute the script, simply run `main.py`. This is ideal for setting up as a Cron job or a Scheduled Task.
+
+```bash
+python main.py
+
+```
+
+### Outputs
+
+* **Console:** Displays status messages (e.g., `Download successful`, `found X files`).
+* **Logs:** Generates folder-based logs (`extract_logs/`, `load_logs/`) timestamped for every run.
+* **S3:** The JSON data will appear in the root of your target S3 bucket.
+
+---
+
+<div align="center">
+<sub>Built with 💖 using Python</sub>
+</div>
